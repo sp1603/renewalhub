@@ -1,0 +1,417 @@
+{% extends "agreements/base.html" %}
+{% block content %}
+<div class="agreements-container">
+  <div class="agreements-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1><i class="fas fa-file-contract"></i> Agreements</h1>
+        <p class="text-secondary">Manage your agreement portfolio</p>
+      </div>
+      <div class="actions">
+        <a href="/upload/" class="btn">
+          <i class="fas fa-plus"></i> Upload New Agreement
+        </a>
+      </div>
+    </div>
+    
+    <div class="search-section">
+      <form method="get" class="search-form">
+        <div class="search-input-group">
+          <i class="fas fa-search"></i>
+          <input type="text" name="q" placeholder="Search by title or vendor..." 
+                 value="{{ request.GET.q }}" class="form-control"/>
+          {% if request.GET.q %}
+            <button type="button" onclick="clearSearch()" class="clear-btn">
+              <i class="fas fa-times"></i>
+            </button>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="agreements-grid">
+    {% for a in agreements %}
+      <div class="agreement-card">
+        <div class="card-header">
+          <div class="agreement-title">
+            <h3><a href="{{ a.get_absolute_url }}">{{ a.title }}</a></h3>
+            <div class="vendor-badge">
+              <i class="fas fa-building"></i>
+              {{ a.vendor }}
+            </div>
+          </div>
+          <div class="agreement-status">
+            {% if a.auto_renews %}
+              <span class="badge badge-success">Auto-Renews</span>
+            {% else %}
+              <span class="badge badge-warning">Manual Renewal</span>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="agreement-details">
+            <div class="detail-row">
+              <span class="detail-label">
+                <i class="fas fa-calendar-start"></i> Effective Date
+              </span>
+              <span class="detail-value">
+                {{ a.effective_date|default:"Not set" }}
+              </span>
+            </div>
+            
+            <div class="detail-row">
+              <span class="detail-label">
+                <i class="fas fa-clock"></i> Term
+              </span>
+              <span class="detail-value">
+                {{ a.term_months }} months
+              </span>
+            </div>
+            
+            <div class="detail-row">
+              <span class="detail-label">
+                <i class="fas fa-exclamation-triangle"></i> Notice Period
+              </span>
+              <span class="detail-value">
+                {{ a.notice_days }} days
+              </span>
+            </div>
+          </div>
+          
+          <div class="key-dates">
+            <h4>Key Dates</h4>
+            <div class="dates-grid">
+              {% if a.notice_deadline %}
+                <div class="date-item notice-deadline">
+                  <div class="date-icon">⚠️</div>
+                  <div class="date-info">
+                    <div class="date-label">Notice Deadline</div>
+                    <div class="date-value">{{ a.notice_deadline }}</div>
+                  </div>
+                </div>
+              {% endif %}
+              
+              {% if a.term_end %}
+                <div class="date-item term-end">
+                  <div class="date-icon">🔚</div>
+                  <div class="date-info">
+                    <div class="date-label">Term End</div>
+                    <div class="date-value">{{ a.term_end }}</div>
+                  </div>
+                </div>
+              {% endif %}
+              
+              {% if a.renewal_date %}
+                <div class="date-item renewal-date">
+                  <div class="date-icon">🔄</div>
+                  <div class="date-info">
+                    <div class="date-label">Renewal Date</div>
+                    <div class="date-value">{{ a.renewal_date }}</div>
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-footer">
+          <a href="{{ a.get_absolute_url }}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-eye"></i> View Details
+          </a>
+          <small class="text-secondary">
+            <i class="fas fa-calendar-plus"></i> Added {{ a.created_at|date:"M j, Y" }}
+          </small>
+        </div>
+      </div>
+    {% empty %}
+      <div class="empty-state">
+        <div class="empty-content">
+          <i class="fas fa-file-contract"></i>
+          <h3>No agreements yet</h3>
+          <p>Get started by uploading your first agreement PDF</p>
+          <a href="/upload/" class="btn">
+            <i class="fas fa-upload"></i> Upload Agreement
+          </a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<style>
+  .agreements-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .agreements-header {
+    background: var(--surface);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .title-section h1 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.75rem;
+  }
+  
+  .title-section p {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.875rem;
+  }
+  
+  .search-section {
+    margin-top: 1rem;
+  }
+  
+  .search-form {
+    max-width: 400px;
+  }
+  
+  .search-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .search-input-group i.fa-search {
+    position: absolute;
+    left: 1rem;
+    color: var(--text-secondary);
+    z-index: 1;
+  }
+  
+  .search-input-group .form-control {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+  
+  .clear-btn {
+    position: absolute;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    z-index: 1;
+  }
+  
+  .agreements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .agreement-card {
+    background: var(--surface);
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+  
+  .agreement-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+  
+  .agreement-card .card-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  
+  .agreement-title h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+  }
+  
+  .agreement-title a {
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+  
+  .agreement-title a:hover {
+    color: var(--primary-color);
+  }
+  
+  .vendor-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+  }
+  
+  .agreement-card .card-body {
+    padding: 1.5rem;
+  }
+  
+  .agreement-details {
+    margin-bottom: 1.5rem;
+  }
+  
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .detail-row:last-child {
+    border-bottom: none;
+  }
+  
+  .detail-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+  }
+  
+  .detail-value {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  
+  .key-dates h4 {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    color: var(--text-primary);
+  }
+  
+  .dates-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .date-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    border: 1px solid var(--border);
+  }
+  
+  .date-item.notice-deadline {
+    background: rgba(245, 158, 11, 0.05);
+    border-color: rgba(245, 158, 11, 0.2);
+  }
+  
+  .date-item.term-end {
+    background: rgba(239, 68, 68, 0.05);
+    border-color: rgba(239, 68, 68, 0.2);
+  }
+  
+  .date-item.renewal-date {
+    background: rgba(37, 99, 235, 0.05);
+    border-color: rgba(37, 99, 235, 0.2);
+  }
+  
+  .date-icon {
+    font-size: 1.25rem;
+  }
+  
+  .date-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+  
+  .date-value {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  
+  .agreement-card .card-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--background);
+  }
+  
+  .empty-state {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+  }
+  
+  .empty-content {
+    text-align: center;
+    max-width: 400px;
+  }
+  
+  .empty-content i {
+    font-size: 4rem;
+    color: var(--border);
+    margin-bottom: 1.5rem;
+  }
+  
+  .empty-content h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+  }
+  
+  .empty-content p {
+    margin: 0 0 2rem 0;
+    color: var(--text-secondary);
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .header-content {
+      flex-direction: column;
+      gap: 1rem;
+      text-align: center;
+    }
+    
+    .agreements-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .agreement-card .card-header {
+      flex-direction: column;
+      gap: 1rem;
+      align-items: center;
+      text-align: center;
+    }
+    
+    .agreement-card .card-footer {
+      flex-direction: column;
+      gap: 0.75rem;
+      text-align: center;
+    }
+  }
+</style>
+
+<script>
+  function clearSearch() {
+    const url = new URL(window.location);
+    url.searchParams.delete('q');
+    window.location.href = url.toString();
+  }
+</script>
+{% endblock %}

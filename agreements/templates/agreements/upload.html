@@ -1,0 +1,108 @@
+{% extends "agreements/base.html" %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h2><i class="fas fa-upload"></i> Upload Agreement PDF</h2>
+    <p class="text-secondary">Upload your PDF agreement and we'll automatically extract all the important details</p>
+  </div>
+  <div class="card-body">
+    <form method="post" enctype="multipart/form-data" id="uploadForm">
+      {% csrf_token %}
+      <div class="upload-area" id="uploadArea" onclick="document.getElementById('id_pdf').click()">
+        <div class="upload-content">
+          <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+          <h3>Drop your PDF here or click to browse</h3>
+          <p class="text-secondary">Only PDF files are accepted</p>
+          <p class="text-secondary" style="font-size: 0.875rem; margin-top: 0.5rem;">
+            We'll automatically extract: vendor name, effective date, term length, and notice requirements
+          </p>
+        </div>
+        {{ form.pdf }}
+      </div>
+      
+      <div class="selected-file" id="selectedFile" style="display: none; margin-top: 1rem; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 0.375rem; border: 1px solid rgba(16, 185, 129, 0.2);">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <i class="fas fa-file-pdf" style="color: var(--danger);"></i>
+          <span id="fileName"></span>
+          <button type="button" onclick="clearFile()" style="margin-left: auto; background: none; border: none; color: var(--text-secondary); cursor: pointer;">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div style="margin-top: 2rem;">
+        <button class="btn" type="submit" id="submitBtn" disabled>
+          <i class="fas fa-magic"></i> Upload & Parse PDF
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+  #id_pdf {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  
+  .upload-area {
+    position: relative;
+  }
+  
+  .upload-content {
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  const uploadArea = document.getElementById('uploadArea');
+  const fileInput = document.getElementById('id_pdf');
+  const selectedFile = document.getElementById('selectedFile');
+  const fileName = document.getElementById('fileName');
+  const submitBtn = document.getElementById('submitBtn');
+  
+  // Drag and drop functionality
+  uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+  });
+  
+  uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('dragover');
+  });
+  
+  uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0 && files[0].type === 'application/pdf') {
+      fileInput.files = files;
+      showSelectedFile(files[0]);
+    } else {
+      alert('Please select a PDF file');
+    }
+  });
+  
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+      showSelectedFile(e.target.files[0]);
+    }
+  });
+  
+  function showSelectedFile(file) {
+    fileName.textContent = file.name;
+    selectedFile.style.display = 'block';
+    uploadArea.style.display = 'none';
+    submitBtn.disabled = false;
+  }
+  
+  function clearFile() {
+    fileInput.value = '';
+    selectedFile.style.display = 'none';
+    uploadArea.style.display = 'block';
+    submitBtn.disabled = true;
+  }
+</script>
+{% endblock %}

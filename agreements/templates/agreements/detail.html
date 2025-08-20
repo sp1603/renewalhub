@@ -1,0 +1,28 @@
+{% extends "agreements/base.html" %}
+{% block content %}
+  <h2>{{ agreement.title }}</h2>
+  <p class="muted">{{ agreement.vendor }}</p>
+  <p>
+    <span class="pill">Effective: {{ agreement.effective_date|default:"—" }}</span>
+    <span class="pill">Term: {{ agreement.term_months }} mo</span>
+    <span class="pill">Notice: {{ agreement.notice_days }} days</span>
+    <a class="btn" href="{{ agreement.get_absolute_url }}calendar.ics">ICS</a>
+  </p>
+  <h3>Upcoming Events</h3>
+  <ul>
+    {% for k, d, s, desc in events %}
+      <li><strong>{{ d }}</strong> — {{ s }} <span class="muted">({{ k }})</span></li>
+    {% empty %}
+      <li>No dates available.</li>
+    {% endfor %}
+  </ul>
+  {% if agreement.pdf %}
+    <p><a href="{{ agreement.pdf.url }}">Source PDF</a></p>
+  {% endif %}
+  {% if agreement.renewal_text %}
+  <h3>Renewal Clause</h3>
+  <pre style="white-space:pre-wrap;">{{ agreement.renewal_text }}</pre>
+  {% endif %}
+  <h3>Parsed Fields (debug)</h3>
+  <pre style="white-space:pre-wrap;">{{ agreement.parsed_fields|json_script:"parsed" }}</pre>
+{% endblock %}

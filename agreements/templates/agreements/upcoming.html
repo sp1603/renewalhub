@@ -1,0 +1,28 @@
+{% extends "agreements/base.html" %}
+{% block content %}
+  <h2>Upcoming Deadlines (next {{ days }} days)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Agreement</th>
+        <th>Vendor</th>
+        <th>Event</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for it in items %}
+      <tr>
+        <td>{{ it.date }}</td>
+        <td><a href="{{ it.agreement.get_absolute_url }}">{{ it.agreement.title }}</a></td>
+        <td>{{ it.agreement.vendor }}</td>
+        <td>{{ it.kind }}</td>
+        <td>{{ it.description }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5">No upcoming items.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
